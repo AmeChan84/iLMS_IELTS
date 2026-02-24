@@ -41,19 +41,23 @@ class IELTSScheduler:
             # Buffer Day (Review) every 7 days
             if (day_idx + 1) % 7 == 0:
                 daily_schedule.is_buffer_day = True
+                desc, link = self._get_task_and_resource("Spaced Repetition")
                 daily_schedule.tasks.append(StudyTask(
                     id=f"review-{day_idx}",
-                    skill="Spaced Repetition",
-                    description="Ôn tập lại kiến thức đã học trong tuần qua",
-                    duration_hours=2.0
+                    skill="Review",
+                    description=desc,
+                    duration_hours=2.0,
+                    resource_link=link
                 ))
             # Mock Test every 14 days
             elif (day_idx + 1) % 14 == 0:
+                desc, link = self._get_task_and_resource("Mock Test")
                 daily_schedule.tasks.append(StudyTask(
                     id=f"mock-{day_idx}",
                     skill="Mock Test",
-                    description="Làm bài Full Mock Test để đánh giá lại năng lực",
-                    duration_hours=3.5
+                    description=desc,
+                    duration_hours=3.5,
+                    resource_link=link
                 ))
             else:
                 available_hours = self._get_available_hours(weekday_name)
@@ -109,44 +113,53 @@ class IELTSScheduler:
         for skill in self.skills:
             skill_hours = total_hours * self.skill_weights[skill]
             if skill_hours >= 0.5:  # At least 30 mins to bother
+                desc, link = self._get_task_and_resource(skill)
                 tasks.append(StudyTask(
                     id=f"{skill}-{day.isoformat()}",
                     skill=skill,
-                    description=self._get_task_description(skill),
+                    description=desc,
                     duration_hours=round(skill_hours, 1),
-                    predicted_impact=self._calculate_impact(skill, skill_hours)
+                    predicted_impact=self._calculate_impact(skill, skill_hours),
+                    resource_link=link
                 ))
         return tasks
 
-    def _get_task_description(self, skill: str) -> str:
-        tasks = {
+    def _get_task_and_resource(self, skill: str) -> (str, str):
+        # Database of tasks and curated links
+        resources = {
             'Listening': [
-                "Luyện Listening Section 1 & 2 (Cambridge 18)",
-                "Nghe chép chính tả (Dictation) bài nói TED-Ed",
-                "Luyện kỹ năng Note-taking cho Section 3",
-                "Làm Full Test Listening & phân tích lỗi sai"
+                ("Luyện Listening Section 1 & 2 (Cambridge 18)", "https://ieltsonlinetests.com/ielts-exam-library"),
+                ("Nghe chép chính tả (Dictation) bài nói TED-Ed", "https://www.ted.com/watch/ted-ed"),
+                ("Luyện kỹ năng Note-taking cho Section 3", "https://www.ieltsbuddy.com/ielts-listening-test.html"),
+                ("Làm Full Test Listening & phân tích lỗi sai", "https://mini-ielts.com/listening")
             ],
             'Reading': [
-                "Đọc Academic Passage 1 & Skimming kỹ thuật",
-                "Luyện dạng bài Matching Headings (Cambridge 17)",
-                "Học từ vựng theo chủ đề Education/Environment",
-                "Làm Full Test Reading trong 60 phút"
+                ("Đọc Academic Passage 1 & Skimming kỹ thuật", "https://www.ielts-exam.net/ielts_reading/"),
+                ("Luyện dạng bài Matching Headings (Cambridge 17)", "https://ieltsmaterial.com/reading/"),
+                ("Học từ vựng theo chủ đề Education/Environment", "https://www.vocabulary.com/lists/ielts"),
+                ("Làm Full Test Reading trong 60 phút", "https://mini-ielts.com/reading")
             ],
             'Writing': [
-                "Phân tích biểu đồ Task 1 (Line Graph/Bar Chart)",
-                "Viết Body Paragraph cho Task 2 chủ đề Technology",
-                "Học cấu trúc câu phức & từ nối (Cohesion)",
-                "Luyện viết Full Task 2 & tự chấm theo tiêu chí"
+                ("Phân tích biểu đồ Task 1 (Line Graph/Bar Chart)", "https://ielts-simon.com/ielts-help-term-course/ielts-writing-task-1/"),
+                ("Viết Body Paragraph cho Task 2 chủ đề Technology", "https://ieltsadvantage.com/writing-task-2/"),
+                ("Học cấu trúc câu phức & từ nối (Cohesion)", "https://www.ieltsbuddy.com/ielts-writing-connectors.html"),
+                ("Luyện viết Full Task 2 & tự chấm theo tiêu chí", "https://writeandimprove.com/")
             ],
             'Speaking': [
-                "Luyện Part 1 các chủ đề quen thuộc (Work/Study)",
-                "Nói Part 2 sử dụng kỹ thuật Mind-map",
-                "Luyện Part 3: Giải thích & đưa ra ví dụ",
-                "Record & nghe lại để sửa phát âm/ngữ điệu"
+                ("Luyện Part 1 các chủ đề quen thuộc (Work/Study)", "https://ieltsliz.com/ielts-speaking-part-1-topics-questions/"),
+                ("Nói Part 2 sử dụng kỹ thuật Mind-map", "https://www.ieltsbuddy.com/ielts-speaking-part-2.html"),
+                ("Luyện Part 3: Giải thích & đưa ra ví dụ", "https://ieltsadvantage.com/ielts-speaking-part-3-guide/"),
+                ("Record & nghe lại để sửa phát âm/ngữ điệu", "https://otter.ai/")
+            ],
+            'Spaced Repetition': [
+                ("Ôn tập lại kiến thức đã học trong tuần qua", "https://ankiweb.net/about")
+            ],
+            'Mock Test': [
+                ("Làm bài Full Mock Test để đánh giá lại năng lực", "https://ielts.idp.com/vietnam/prepare/free-practice-tests")
             ]
         }
         import random
-        options = tasks.get(skill, ["Luyện tập tổng hợp kỹ năng"])
+        options = resources.get(skill, [("Luyện tập tổng hợp", "https://www.ielts.org/")])
         return random.choice(options)
 
     def _calculate_impact(self, skill: str, hours: float) -> float:

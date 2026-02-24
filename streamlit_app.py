@@ -131,7 +131,7 @@ st.title("🎓 IELTS iLMS: Hệ thống Quản lý Học tập Thông minh")
 if not st.session_state.profile:
     st.info("👈 Hãy thiết lập hồ sơ và nhấn 'Tạo Lộ Trình' để bắt đầu.")
 else:
-    tab1, tab2, tab3, tab4 = st.tabs(["📅 Lịch Học (Timetable)", "📈 Biểu đồ Tăng Trưởng", "📝 Nhật ký (Log)", "📊 Xuất Dữ Liệu (Research)"])
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📅 Lịch Học", "📈 Biểu đồ", "📝 Nhật ký", "📚 Kho Tài Liệu", "📊 Research", "🚀 Triển khai"])
     
     with tab1:
         st.header("📅 Lộ trình học tập 7 ngày tới")
@@ -155,17 +155,20 @@ else:
                         </div>
                         """, unsafe_allow_html=True)
                         
-                        col1, col2 = st.columns([1, 5])
+                        col1, col2, col3 = st.columns([1, 3, 2])
                         with col1:
-                            is_done = st.checkbox("Hoàn thành", key=f"check-{task.id}", value=task.is_completed)
+                            is_done = st.checkbox("Xong", key=f"check-{task.id}", value=task.is_completed)
                             if is_done and not task.is_completed:
                                 task.is_completed = True
                                 task.completed_at = datetime.now()
                                 st.session_state.completed_tasks.append(task)
                                 st.rerun()
                         with col2:
+                            if task.resource_link:
+                                st.link_button("📖 Xem tài liệu", task.resource_link, use_container_width=True)
+                        with col3:
                             if task.is_completed:
-                                st.success(f"Tuyệt vời! Bạn đã tích lũy thêm {round(task.predicted_impact, 3)} điểm dự kiến.")
+                                st.success(f"+{round(task.predicted_impact, 3)} Band")
 
     with tab2:
         st.header("📊 Phân tích tiến độ học tập")
@@ -254,6 +257,42 @@ else:
             st.dataframe(df_log, use_container_width=True)
 
     with tab4:
+        st.header("📚 Kho Tài Liệu IELTS Chọn Lọc")
+        
+        col_res1, col_res2 = st.columns(2)
+        with col_res1:
+            with st.container(border=True):
+                st.subheader("🎧 Listening & 📖 Reading")
+                st.markdown("""
+                - **Cambridge IELTS 10-19**: Bộ đề thi sát thực tế nhất. [Truy cập](https://ieltsonlinetests.com/ielts-exam-library)
+                - **Mini IELTS**: Luyện tập theo từng dạng bài ngắn. [Truy cập](https://mini-ielts.com/)
+                - **IELTS Online Tests**: Hệ thống thi thử như thật. [Truy cập](https://ieltsonlinetests.com/)
+                """)
+            
+            with st.container(border=True):
+                st.subheader("✍️ Writing")
+                st.markdown("""
+                - **IELTS Simon**: Các bài mẫu Task 1 & 2 cực kỳ súc tích. [Truy cập](https://ielts-simon.com/)
+                - **Write & Improve**: Công cụ của Cambridge tự chấm bài viết. [Truy cập](https://writeandimprove.com/)
+                - **IELTS Advantage**: Hướng dẫn tư duy viết bài chuyên sâu. [Truy cập](https://ieltsadvantage.com/)
+                """)
+
+        with col_res2:
+            with st.container(border=True):
+                st.subheader("🗣️ Speaking")
+                st.markdown("""
+                - **IELTS Liz Speaking**: Tổng hợp câu hỏi và bài mẫu Part 1, 2, 3. [Truy cập](https://ieltsliz.com/ielts-speaking-part-1-topics-questions/)
+                - **IELTS Speaking Success**: Kênh YouTube luyện phản xạ cực tốt. [Truy cập](https://www.youtube.com/@IELTSSpeakingSuccess)
+                """)
+            
+            with st.container(border=True):
+                st.subheader("📝 Tổng hợp & Từ vựng")
+                st.markdown("""
+                - **IELTS Buddy**: Tổng hợp ngữ pháp và từ vựng theo chủ đề. [Truy cập](https://www.ieltsbuddy.com/)
+                - **Vocabulary.com**: Học từ vựng qua ngữ cảnh thực tế. [Truy cập](https://www.vocabulary.com/)
+                """)
+
+    with tab5:
         st.header("Xuất dữ liệu cho Nghiên cứu (Research Support)")
         
         col1, col2 = st.columns(2)
@@ -289,3 +328,31 @@ else:
                 scheduler = IELTSScheduler(st.session_state.profile)
                 st.session_state.timetable = scheduler.generate_timetable(st.session_state.completed_tasks)
                 st.success("Đã cập nhật điểm Mock Test và tối ưu hóa lại lộ trình!")
+
+    with tab6:
+        st.header("🚀 Hướng dẫn Triển khai Link Vĩnh viễn")
+        st.markdown("""
+        Để đưa ứng dụng này lên mạng với link dạng `ielts-app.streamlit.app`, bạn hãy làm theo các bước sau:
+        
+        ### **Bước 1: Đưa code lên GitHub**
+        1. Tạo một tài khoản [GitHub](https://github.com/) nếu chưa có.
+        2. Tạo một Repository mới tên là `ielts-ilms`.
+        3. Tải các tệp sau lên GitHub:
+           - `streamlit_app.py`
+           - `models.py`
+           - `scheduler.py`
+           - `requirements.txt`
+           - Thư mục `.streamlit/` (chứa `config.toml`)
+        
+        ### **Bước 2: Kết nối với Streamlit Cloud**
+        1. Truy cập [share.streamlit.io](https://share.streamlit.io/).
+        2. Đăng nhập bằng tài khoản GitHub của bạn.
+        3. Nhấn **"Create app"** -> **"I already have an app"**.
+        4. Nhập link GitHub Repository của bạn.
+        5. Mục **Main file path**: Điền `streamlit_app.py`.
+        6. Nhấn **"Deploy!"**.
+        
+        ### **Bước 3: Tùy chỉnh Link**
+        - Sau khi deploy thành công, bạn có thể vào phần **Settings** của app trên Streamlit Cloud để đổi tên miền (URL) thành bất cứ tên gì bạn muốn (ví dụ: `ielts-ai-optimizer`).
+        """)
+        st.info("💡 Lưu ý: Khi đã triển khai lên Streamlit Cloud, bạn không cần phải bật máy tính của mình nữa. Website sẽ hoạt động 24/7.")
