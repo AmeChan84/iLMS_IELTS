@@ -42,22 +42,26 @@ class IELTSScheduler:
             if (day_idx + 1) % 7 == 0:
                 daily_schedule.is_buffer_day = True
                 desc, link = self._get_task_and_resource("Spaced Repetition")
+                guide = self._get_study_guide("Review")
                 daily_schedule.tasks.append(StudyTask(
                     id=f"review-{day_idx}",
                     skill="Review",
                     description=desc,
                     duration_hours=2.0,
-                    resource_link=link
+                    resource_link=link,
+                    study_guide=guide
                 ))
             # Mock Test every 14 days
             elif (day_idx + 1) % 14 == 0:
                 desc, link = self._get_task_and_resource("Mock Test")
+                guide = self._get_study_guide("Mock Test")
                 daily_schedule.tasks.append(StudyTask(
                     id=f"mock-{day_idx}",
                     skill="Mock Test",
                     description=desc,
                     duration_hours=3.5,
-                    resource_link=link
+                    resource_link=link,
+                    study_guide=guide
                 ))
             else:
                 available_hours = self._get_available_hours(weekday_name)
@@ -114,15 +118,28 @@ class IELTSScheduler:
             skill_hours = total_hours * self.skill_weights[skill]
             if skill_hours >= 0.5:  # At least 30 mins to bother
                 desc, link = self._get_task_and_resource(skill)
+                guide = self._get_study_guide(skill)
                 tasks.append(StudyTask(
                     id=f"{skill}-{day.isoformat()}",
                     skill=skill,
                     description=desc,
                     duration_hours=round(skill_hours, 1),
                     predicted_impact=self._calculate_impact(skill, skill_hours),
-                    resource_link=link
+                    resource_link=link,
+                    study_guide=guide
                 ))
         return tasks
+
+    def _get_study_guide(self, skill: str) -> str:
+        guides = {
+            'Listening': "Tập trung vào từ khóa (Keywords) và dự đoán loại từ trước khi nghe. Sau khi làm xong, hãy nghe lại với Script (Transcribe) để nhận diện âm nối.",
+            'Reading': "Áp dụng kỹ thuật Skimming (đọc lướt lấy ý chính) và Scanning (tìm thông tin cụ thể). Đừng cố hiểu từng từ, hãy tập trung vào các từ đồng nghĩa (Paraphrasing).",
+            'Writing': "Luôn lập dàn ý trong 5 phút đầu. Kiểm tra tính mạch lạc (Coherence) và sử dụng đa dạng các cấu trúc câu phức/ghép.",
+            'Speaking': "Luyện nói trôi chảy (Fluency) trước khi chú trọng ngữ pháp. Hãy thu âm lại và nghe để tự sửa các lỗi phát âm cơ bản.",
+            'Review': "Sử dụng kỹ thuật Spaced Repetition (Lặp lại ngắt quãng). Tập trung vào các lỗi sai bạn đã mắc phải trong tuần.",
+            'Mock Test': "Làm bài trong điều kiện áp lực thời gian thật. Không dùng từ điển và cố gắng hoàn thành đúng thời gian quy định cho mỗi phần."
+        }
+        return guides.get(skill, "Hãy tập trung tối đa và ghi chú lại những kiến thức mới.")
 
     def _get_task_and_resource(self, skill: str) -> (str, str):
         # Database of tasks and curated links

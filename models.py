@@ -21,6 +21,7 @@ class StudyTask:
     completed_at: Optional[datetime] = None
     predicted_impact: float = 0.0  # Estimated band score increase
     resource_link: Optional[str] = None  # Link to PDF, Video, or Article
+    study_guide: Optional[str] = None  # Specific instructions on how to learn
 
 @dataclass
 class DailySchedule:

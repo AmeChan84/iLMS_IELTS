@@ -76,18 +76,26 @@ if 'completed_tasks' not in st.session_state:
 st.sidebar.title("🛠 Thiết lập Hồ sơ (Profiling)")
 
 with st.sidebar:
+    with st.expander("📖 Hướng dẫn nhanh", expanded=False):
+        st.info("""
+        1. **Khảo sát**: Nhập điểm hiện tại của bạn. Nếu chưa thi bao giờ, hãy ước lượng hoặc làm bài test nhanh.
+        2. **Mục tiêu**: Nhập điểm bạn cần đạt và ngày thi. Hệ thống sẽ tự tính toán khối lượng học.
+        3. **Thời gian**: Chọn khung giờ bạn thực sự rảnh. Đừng ép bản thân quá sức!
+        4. **Tạo lộ trình**: Nhấn nút phía dưới để nhận lịch học cá nhân hóa.
+        """)
+    
     st.subheader("1. Khảo sát năng lực (Diagnostic)")
-    l_score = st.number_input("Listening (Hiện tại)", 0.0, 9.0, 6.0, 0.5)
-    r_score = st.number_input("Reading (Hiện tại)", 0.0, 9.0, 6.5, 0.5)
-    w_score = st.number_input("Writing (Hiện tại)", 0.0, 9.0, 5.5, 0.5)
-    s_score = st.number_input("Speaking (Hiện tại)", 0.0, 9.0, 6.0, 0.5)
+    l_score = st.number_input("Listening (Hiện tại)", 0.0, 9.0, 6.0, 0.5, help="Điểm nghe hiện tại của bạn. IELTS tính theo thang điểm từ 0-9.")
+    r_score = st.number_input("Reading (Hiện tại)", 0.0, 9.0, 6.5, 0.5, help="Điểm đọc hiện tại của bạn.")
+    w_score = st.number_input("Writing (Hiện tại)", 0.0, 9.0, 5.5, 0.5, help="Điểm viết hiện tại của bạn.")
+    s_score = st.number_input("Speaking (Hiện tại)", 0.0, 9.0, 6.0, 0.5, help="Điểm nói hiện tại của bạn.")
     
     st.subheader("2. Thiết lập mục tiêu (Goal Setting)")
-    target_l = st.number_input("Listening (Mục tiêu)", 0.0, 9.0, 7.5, 0.5)
-    target_r = st.number_input("Reading (Mục tiêu)", 0.0, 9.0, 7.5, 0.5)
-    target_w = st.number_input("Writing (Mục tiêu)", 0.0, 9.0, 7.0, 0.5)
-    target_s = st.number_input("Speaking (Mục tiêu)", 0.0, 9.0, 7.0, 0.5)
-    exam_date = st.date_input("Ngày thi dự kiến", date.today() + timedelta(days=90))
+    target_l = st.number_input("Listening (Mục tiêu)", 0.0, 9.0, 7.5, 0.5, help="Điểm nghe bạn mong muốn đạt được.")
+    target_r = st.number_input("Reading (Mục tiêu)", 0.0, 9.0, 7.5, 0.5, help="Điểm đọc bạn mong muốn đạt được.")
+    target_w = st.number_input("Writing (Mục tiêu)", 0.0, 9.0, 7.0, 0.5, help="Điểm viết bạn mong muốn đạt được.")
+    target_s = st.number_input("Speaking (Mục tiêu)", 0.0, 9.0, 7.0, 0.5, help="Điểm nói bạn mong muốn đạt được.")
+    exam_date = st.date_input("Ngày thi dự kiến", date.today() + timedelta(days=90), help="Ngày bạn dự định đi thi thật.")
     
     st.subheader("3. Quỹ thời gian (Availability)")
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -129,9 +137,35 @@ with st.sidebar:
 st.title("🎓 IELTS iLMS: Hệ thống Quản lý Học tập Thông minh")
 
 if not st.session_state.profile:
-    st.info("👈 Hãy thiết lập hồ sơ và nhấn 'Tạo Lộ Trình' để bắt đầu.")
+    st.markdown("""
+    ### � Chào mừng bạn đến với IELTS iLMS!
+    
+    Đây là hệ thống quản lý học tập thông minh giúp bạn tối ưu hóa con đường đạt mục tiêu IELTS.
+    
+    #### **Để bắt đầu, hãy thực hiện các bước sau tại thanh bên trái (Sidebar):**
+    1. **Nhập điểm hiện tại**: Để hệ thống biết bạn đang ở đâu.
+    2. **Đặt mục tiêu**: Band score bạn muốn đạt và ngày thi dự kiến.
+    3. **Quỹ thời gian**: Rất quan trọng! Hãy chọn chính xác giờ bạn có thể học mỗi ngày.
+    4. **Cá nhân hóa**: Chọn cấp độ tập trung để thuật toán AI điều chỉnh độ khó.
+    
+    ---
+    🚀 **Nhấn nút 'Tạo Lộ Trình Thông Minh' để nhận lịch học cá nhân hóa ngay lập tức!**
+    """)
+    
+    with st.container(border=True):
+        st.subheader("💡 Tại sao nên dùng IELTS iLMS?")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown("**🎯 Đúng trọng tâm**")
+            st.write("Thuật toán tự động tập trung vào các kỹ năng bạn còn yếu.")
+        with col2:
+            st.markdown("**📊 Minh bạch tiến độ**")
+            st.write("Biểu đồ dự báo giúp bạn biết mình có đang đi đúng hướng không.")
+        with col3:
+            st.markdown("**🛡️ Tránh quá tải**")
+            st.write("Cơ chế Buffer Days giúp bạn có thời gian ôn tập và nghỉ ngơi.")
 else:
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📅 Lịch Học", "📈 Biểu đồ", "📝 Nhật ký", "📚 Kho Tài Liệu", "📊 Research", "🚀 Triển khai"])
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["📅 Lịch Học", "📈 Biểu đồ", "📝 Nhật ký", "📚 Kho Tài Liệu", "ℹ️ Hướng dẫn", "📊 Research", "🚀 Triển khai"])
     
     with tab1:
         st.header("📅 Lộ trình học tập 7 ngày tới")
@@ -169,6 +203,20 @@ else:
                         with col3:
                             if task.is_completed:
                                 st.success(f"+{round(task.predicted_impact, 3)} Band")
+                                import random
+                                cheers = [
+                                    "Tuyệt vời! Bạn đang tiến bộ từng ngày! 🚀",
+                                    "Làm tốt lắm! Hãy giữ vững phong độ nhé! 🔥",
+                                    "Một bước tiến gần hơn tới mục tiêu rồi! 🎯",
+                                    "Bạn đã hoàn thành rất xuất sắc! 🌟",
+                                    "Kiên trì là chìa khóa, bạn đang làm rất tốt! 💪"
+                                ]
+                                st.toast(random.choice(cheers))
+                        
+                        # Add Study Guide
+                        if task.study_guide:
+                            with st.container(border=False):
+                                st.caption(f"💡 **Cách học:** {task.study_guide}")
 
     with tab2:
         st.header("📊 Phân tích tiến độ học tập")
@@ -293,6 +341,49 @@ else:
                 """)
 
     with tab5:
+        st.header("ℹ️ Hướng dẫn & IELTS 101")
+        
+        with st.expander("🎓 IELTS 101: Những điều cơ bản nhất", expanded=True):
+            st.markdown("""
+            ### **IELTS là gì?**
+            IELTS (International English Language Testing System) là bài kiểm tra tiếng Anh quốc tế với 4 kỹ năng:
+            - **Listening (Nghe)**: 40 câu hỏi, khoảng 30 phút.
+            - **Reading (Đọc)**: 40 câu hỏi, 60 phút.
+            - **Writing (Viết)**: 2 nhiệm vụ (Task 1 & 2), 60 phút.
+            - **Speaking (Nói)**: Phỏng vấn trực tiếp 11-14 phút.
+            
+            ### **Thang điểm (Band Score)**
+            Điểm được tính từ **0 đến 9.0**. 
+            - **6.0 - 6.5**: Mức điểm phổ biến để đi du học hoặc định cư.
+            - **7.0+**: Mức điểm giỏi, mở ra nhiều cơ hội học bổng.
+            
+            ### **Các thuật ngữ trong iLMS**
+            - **Skimming**: Đọc lướt nhanh để nắm ý chính của đoạn văn.
+            - **Scanning**: Đọc nhanh để tìm một thông tin cụ thể (ngày tháng, tên riêng).
+            - **Paraphrasing**: Cách dùng từ ngữ khác nhưng vẫn giữ nguyên nghĩa gốc (rất quan trọng để điểm cao).
+            """)
+
+        with st.expander("📖 Cách sử dụng iLMS hiệu quả"):
+            st.write("""
+            - **Xem lịch học**: Mỗi ngày, hệ thống sẽ đề xuất các nhiệm vụ cụ thể. Hãy nhấn vào 'Xem tài liệu' để bắt đầu học.
+            - **Tích chọn hoàn thành**: Sau khi học xong, đừng quên nhấn vào ô 'Xong' để hệ thống ghi nhận dữ liệu.
+            - **Theo dõi Band score**: Mỗi nhiệm vụ hoàn thành sẽ đóng góp một phần vào việc tăng điểm dự kiến của bạn.
+            """)
+            
+        with st.expander("2. Cách thuật toán AI hoạt động"):
+            st.write("""
+            - **Phân bổ trọng số**: Thuật toán tính toán khoảng cách (Gap) giữa điểm hiện tại và mục tiêu để ưu tiên kỹ năng yếu hơn.
+            - **Cơ chế phản hồi**: Nếu bạn thường xuyên bỏ lỡ nhiệm vụ của một kỹ năng, hệ thống sẽ tự động tăng cường kỹ năng đó trong lần tính toán lại (Recalculate).
+            - **Buffer Days**: Hệ thống tự chèn các ngày nghỉ/ôn tập để đảm bảo bạn không bị 'burn out'.
+            """)
+
+        with st.expander("3. Theo dõi và Điều chỉnh"):
+            st.write("""
+            - **Biểu đồ**: Tab 'Biểu đồ' giúp bạn so sánh đường cong kỳ vọng và tiến độ thực tế.
+            - **Cập nhật Mock Test**: Nếu bạn vừa làm một bài thi thử thật, hãy vào tab 'Research' để cập nhật điểm mới nhất. Hệ thống sẽ tính lại toàn bộ lộ trình phía sau cho bạn.
+            """)
+
+    with tab6:
         st.header("Xuất dữ liệu cho Nghiên cứu (Research Support)")
         
         col1, col2 = st.columns(2)
@@ -329,7 +420,7 @@ else:
                 st.session_state.timetable = scheduler.generate_timetable(st.session_state.completed_tasks)
                 st.success("Đã cập nhật điểm Mock Test và tối ưu hóa lại lộ trình!")
 
-    with tab6:
+    with tab7:
         st.header("🚀 Hướng dẫn Triển khai Link Vĩnh viễn")
         st.markdown("""
         Để đưa ứng dụng này lên mạng với link dạng `ielts-app.streamlit.app`, bạn hãy làm theo các bước sau:
