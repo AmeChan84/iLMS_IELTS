@@ -192,10 +192,16 @@ else:
                         col1, col2, col3 = st.columns([1, 3, 2])
                         with col1:
                             is_done = st.checkbox("Xong", key=f"check-{task.id}", value=task.is_completed)
-                            if is_done and not task.is_completed:
-                                task.is_completed = True
-                                task.completed_at = datetime.now()
-                                st.session_state.completed_tasks.append(task)
+                            if is_done != task.is_completed:
+                                if is_done:
+                                    task.is_completed = True
+                                    task.completed_at = datetime.now()
+                                    st.session_state.completed_tasks.append(task)
+                                else:
+                                    task.is_completed = False
+                                    task.completed_at = None
+                                    # Remove from completed_tasks by ID to avoid duplicates
+                                    st.session_state.completed_tasks = [t for t in st.session_state.completed_tasks if t.id != task.id]
                                 st.rerun()
                         with col2:
                             if task.resource_link:
