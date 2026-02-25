@@ -5,6 +5,7 @@ from datetime import date, timedelta, datetime
 from models import UserProfile, StudyTask, DailySchedule
 from scheduler import IELTSScheduler
 import io
+import math
 
 # Page Config
 st.set_page_config(page_title="IELTS iLMS", layout="wide", page_icon="🎓")
