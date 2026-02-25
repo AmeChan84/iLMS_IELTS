@@ -113,6 +113,7 @@ with st.sidebar:
                 
     st.subheader("4. Cá nhân hóa (Personalize)")
     focus_level = st.select_slider("Mức độ tập trung (Focus Level)", options=[1, 2, 3, 4, 5], value=3, help="1: Thư giãn - 5: Cực kỳ tập trung")
+    learning_style = st.selectbox("Phương pháp học yêu thích", ["Visual (Hình ảnh)", "Auditory (Âm thanh)", "Kinesthetic (Vận động)", "Read/Write (Đọc/Ghi chép)"], help="Hệ thống sẽ điều chỉnh tài liệu phù hợp với phong cách học của bạn.")
     
     if st.button("🚀 Tạo Lộ Trình Thông Minh", use_container_width=True):
         profile = UserProfile(
@@ -120,7 +121,8 @@ with st.sidebar:
             target_scores={'Listening': target_l, 'Reading': target_r, 'Writing': target_w, 'Speaking': target_s},
             exam_date=exam_date,
             availability=availability,
-            focus_level=focus_level
+            focus_level=focus_level,
+            learning_style=learning_style
         )
         st.session_state.profile = profile
         scheduler = IELTSScheduler(profile)
