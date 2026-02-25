@@ -165,7 +165,7 @@ if not st.session_state.profile:
             st.markdown("**🛡️ Tránh quá tải**")
             st.write("Cơ chế Buffer Days giúp bạn có thời gian ôn tập và nghỉ ngơi.")
 else:
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["📅 Lịch Học", "📈 Biểu đồ", "📝 Nhật ký", "📚 Kho Tài Liệu", "ℹ️ Hướng dẫn", "📊 Research", "🚀 Triển khai"])
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📅 Lịch Học", "📈 Biểu đồ", "📝 Nhật ký", "📚 Kho Tài Liệu", "ℹ️ Hướng dẫn", "📊 Research"])
     
     with tab1:
         st.header("📅 Lộ trình học tập 7 ngày tới")
@@ -213,10 +213,11 @@ else:
                                 ]
                                 st.toast(random.choice(cheers))
                         
-                        # Add Study Guide
-                        if task.study_guide:
+                        # Add Study Guide with safety check
+                        guide = getattr(task, 'study_guide', None)
+                        if guide:
                             with st.container(border=False):
-                                st.caption(f"💡 **Cách học:** {task.study_guide}")
+                                st.caption(f"💡 **Cách học:** {guide}")
 
     with tab2:
         st.header("📊 Phân tích tiến độ học tập")
@@ -419,31 +420,3 @@ else:
                 scheduler = IELTSScheduler(st.session_state.profile)
                 st.session_state.timetable = scheduler.generate_timetable(st.session_state.completed_tasks)
                 st.success("Đã cập nhật điểm Mock Test và tối ưu hóa lại lộ trình!")
-
-    with tab7:
-        st.header("🚀 Hướng dẫn Triển khai Link Vĩnh viễn")
-        st.markdown("""
-        Để đưa ứng dụng này lên mạng với link dạng `ielts-app.streamlit.app`, bạn hãy làm theo các bước sau:
-        
-        ### **Bước 1: Đưa code lên GitHub**
-        1. Tạo một tài khoản [GitHub](https://github.com/) nếu chưa có.
-        2. Tạo một Repository mới tên là `ielts-ilms`.
-        3. Tải các tệp sau lên GitHub:
-           - `streamlit_app.py`
-           - `models.py`
-           - `scheduler.py`
-           - `requirements.txt`
-           - Thư mục `.streamlit/` (chứa `config.toml`)
-        
-        ### **Bước 2: Kết nối với Streamlit Cloud**
-        1. Truy cập [share.streamlit.io](https://share.streamlit.io/).
-        2. Đăng nhập bằng tài khoản GitHub của bạn.
-        3. Nhấn **"Create app"** -> **"I already have an app"**.
-        4. Nhập link GitHub Repository của bạn.
-        5. Mục **Main file path**: Điền `streamlit_app.py`.
-        6. Nhấn **"Deploy!"**.
-        
-        ### **Bước 3: Tùy chỉnh Link**
-        - Sau khi deploy thành công, bạn có thể vào phần **Settings** của app trên Streamlit Cloud để đổi tên miền (URL) thành bất cứ tên gì bạn muốn (ví dụ: `ielts-ai-optimizer`).
-        """)
-        st.info("💡 Lưu ý: Khi đã triển khai lên Streamlit Cloud, bạn không cần phải bật máy tính của mình nữa. Website sẽ hoạt động 24/7.")
