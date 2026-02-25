@@ -22,7 +22,9 @@ class IELTSScheduler:
     def generate_timetable(self, completed_tasks: List[StudyTask] = None) -> List[DailySchedule]:
         today = datetime.date.today()
         exam_date = self.profile.exam_date
-        total_days = (exam_date - today).days
+        
+        # Minimum 56 days (8 weeks) to fulfill the 8-week plan requirement
+        total_days = max(56, (exam_date - today).days)
 
         if total_days <= 0:
             return []
@@ -38,39 +40,89 @@ class IELTSScheduler:
             
             daily_schedule = DailySchedule(date=current_date)
             
-            # Buffer Day (Review) every 7 days
+            # Buffer Day (Review) every 7 days (End of each week)
             if (day_idx + 1) % 7 == 0:
                 daily_schedule.is_buffer_day = True
-                desc, link = self._get_task_and_resource("Spaced Repetition")
-                guide = self._get_study_guide("Review", 6.0) # Average score for review
-                daily_schedule.tasks.append(StudyTask(
-                    id=f"review-{day_idx}",
-                    skill="Review",
-                    description=desc,
-                    duration_hours=2.0,
-                    resource_link=link,
-                    study_guide=guide
-                ))
-            # Mock Test every 14 days
-            elif (day_idx + 1) % 14 == 0:
-                desc, link = self._get_task_and_resource("Mock Test")
-                guide = self._get_study_guide("Mock Test", 6.0) # Average score for mock
-                daily_schedule.tasks.append(StudyTask(
-                    id=f"mock-{day_idx}",
-                    skill="Mock Test",
-                    description=desc,
-                    duration_hours=3.5,
-                    resource_link=link,
-                    study_guide=guide
-                ))
+                
+                # Mock Test every 14 days (End of even weeks)
+                if (day_idx + 1) % 14 == 0:
+                    desc, link = self._get_task_and_resource("Mock Test")
+                    guide = self._get_study_guide("Mock Test", 6.0)
+                    daily_schedule.tasks.append(StudyTask(
+                        id=f"mock-{day_idx}",
+                        skill="Mock Test",
+                        description=desc,
+                        duration_hours=3.5,
+                        resource_link=link,
+                        study_guide=guide
+                    ))
+                else:
+                    desc, link = self._get_task_and_resource("Spaced Repetition")
+                    guide = self._get_study_guide("Review", 6.0)
+                    daily_schedule.tasks.append(StudyTask(
+                        id=f"review-{day_idx}",
+                        skill="Review",
+                        description=desc,
+                        duration_hours=2.0,
+                        resource_link=link,
+                        study_guide=guide
+                    ))
             else:
                 available_hours = self._get_available_hours(weekday_name)
                 if available_hours > 0:
-                    daily_schedule.tasks = self._assign_tasks(current_date, available_hours)
+                    daily_schedule.tasks = self._assign_tasks(current_date, available_hours, day_idx)
             
             timetable.append(daily_schedule)
         
         return timetable
+
+    def _assign_tasks(self, day: datetime.date, total_hours: float, day_idx: int) -> List[StudyTask]:
+        tasks = []
+        
+        # For 8-week plan, we rotate focus skills to ensure all 4 skills are covered properly
+        # but prioritized by weights.
+        # Day rotation: 
+        # Mon: L/R, Tue: W/S, Wed: L/R, Thu: W/S, Fri: L/R, Sat: W/S
+        # This ensures balanced coverage across all 4 skills within a week.
+        
+        rotation_map = {
+            0: ['Listening', 'Reading'], # Monday
+            1: ['Writing', 'Speaking'],   # Tuesday
+            2: ['Listening', 'Reading'], # Wednesday
+            3: ['Writing', 'Speaking'],   # Thursday
+            4: ['Listening', 'Reading'], # Friday
+            5: ['Writing', 'Speaking'],   # Saturday
+            6: ['Listening', 'Reading', 'Writing', 'Speaking'] # Sunday (if not buffer)
+        }
+        
+        weekday_idx = day.weekday() # 0 is Monday
+        active_skills = rotation_map.get(weekday_idx, self.skills)
+        
+        # Calculate weights only for active skills of the day
+        active_weights = {s: self.skill_weights[s] for s in active_skills}
+        total_active_weight = sum(active_weights.values())
+        
+        if total_active_weight > 0:
+            normalized_weights = {s: active_weights[s] / total_active_weight for s in active_skills}
+        else:
+            normalized_weights = {s: 1.0/len(active_skills) for s in active_skills}
+
+        for skill in active_skills:
+            skill_hours = total_hours * normalized_weights[skill]
+            if skill_hours >= 0.5:
+                desc, link = self._get_task_and_resource(skill)
+                current_score = self.profile.current_scores.get(skill, 5.0)
+                guide = self._get_study_guide(skill, current_score)
+                tasks.append(StudyTask(
+                    id=f"{skill}-{day.isoformat()}",
+                    skill=skill,
+                    description=desc,
+                    duration_hours=round(skill_hours, 1),
+                    predicted_impact=self._calculate_impact(skill, skill_hours),
+                    resource_link=link,
+                    study_guide=guide
+                ))
+        return tasks
 
     def _adjust_weights_based_on_performance(self, completed_tasks: List[StudyTask]):
         # Analyze performance: which skills are being completed and which are not
@@ -102,6 +154,10 @@ class IELTSScheduler:
 
     def _get_available_hours(self, weekday: str) -> float:
         times = self.profile.availability.get(weekday, [])
+        if not isinstance(times, list):
+            # If it's stored as a single number (from the current UI slider)
+            return float(times)
+        
         if not times:
             return 0.0
         # Simple duration calculation (assuming pairs of start/end hours)
@@ -110,26 +166,6 @@ class IELTSScheduler:
             if i + 1 < len(times):
                 total += (times[i+1] - times[i])
         return float(total)
-
-    def _assign_tasks(self, day: datetime.date, total_hours: float) -> List[StudyTask]:
-        tasks = []
-        # Distribute hours across skills based on weights
-        for skill in self.skills:
-            skill_hours = total_hours * self.skill_weights[skill]
-            if skill_hours >= 0.5:  # At least 30 mins to bother
-                desc, link = self._get_task_and_resource(skill)
-                current_score = self.profile.current_scores.get(skill, 5.0)
-                guide = self._get_study_guide(skill, current_score)
-                tasks.append(StudyTask(
-                    id=f"{skill}-{day.isoformat()}",
-                    skill=skill,
-                    description=desc,
-                    duration_hours=round(skill_hours, 1),
-                    predicted_impact=self._calculate_impact(skill, skill_hours),
-                    resource_link=link,
-                    study_guide=guide
-                ))
-        return tasks
 
     def _get_study_guide(self, skill: str, current_score: float) -> str:
         import random

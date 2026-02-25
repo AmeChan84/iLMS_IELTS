@@ -73,7 +73,7 @@ if 'completed_tasks' not in st.session_state:
     st.session_state.completed_tasks = []
 
 # Sidebar: Input & Profiling
-st.sidebar.title("🛠 Thiết lập Hồ sơ (Profiling)")
+st.sidebar.title("🛠 Thiết lập Hồ sơ (Profile)")
 
 with st.sidebar:
     with st.expander("📖 Hướng dẫn nhanh", expanded=False):
@@ -84,49 +84,49 @@ with st.sidebar:
         4. **Tạo lộ trình**: Nhấn nút phía dưới để nhận lịch học cá nhân hóa.
         """)
     
-    st.subheader("1. Khảo sát năng lực (Diagnostic)")
-    l_score = st.number_input("Listening (Hiện tại)", 0.0, 9.0, 6.0, 0.5, help="Điểm nghe hiện tại của bạn. IELTS tính theo thang điểm từ 0-9.")
-    r_score = st.number_input("Reading (Hiện tại)", 0.0, 9.0, 6.5, 0.5, help="Điểm đọc hiện tại của bạn.")
-    w_score = st.number_input("Writing (Hiện tại)", 0.0, 9.0, 5.5, 0.5, help="Điểm viết hiện tại của bạn.")
-    s_score = st.number_input("Speaking (Hiện tại)", 0.0, 9.0, 6.0, 0.5, help="Điểm nói hiện tại của bạn.")
+    st.subheader("1. Khảo sát năng lực (Your Scores)")
+    l_score = st.number_input("Nghe - Listening (Hiện tại)", 0.0, 9.0, 6.0, 0.5, help="Điểm nghe hiện tại của bạn. IELTS tính theo thang điểm từ 0-9.")
+    r_score = st.number_input("Đọc - Reading (Hiện tại)", 0.0, 9.0, 6.5, 0.5, help="Điểm đọc hiện tại của bạn.")
+    w_score = st.number_input("Viết - Writing (Hiện tại)", 0.0, 9.0, 5.5, 0.5, help="Điểm viết hiện tại của bạn.")
+    s_score = st.number_input("Nói - Speaking (Hiện tại)", 0.0, 9.0, 6.0, 0.5, help="Điểm nói hiện tại của bạn.")
     
-    st.subheader("2. Thiết lập mục tiêu (Goal Setting)")
-    target_l = st.number_input("Listening (Mục tiêu)", 0.0, 9.0, 7.5, 0.5, help="Điểm nghe bạn mong muốn đạt được.")
-    target_r = st.number_input("Reading (Mục tiêu)", 0.0, 9.0, 7.5, 0.5, help="Điểm đọc bạn mong muốn đạt được.")
-    target_w = st.number_input("Writing (Mục tiêu)", 0.0, 9.0, 7.0, 0.5, help="Điểm viết bạn mong muốn đạt được.")
-    target_s = st.number_input("Speaking (Mục tiêu)", 0.0, 9.0, 7.0, 0.5, help="Điểm nói bạn mong muốn đạt được.")
+    st.subheader("2. Thiết lập mục tiêu (Your Goals)")
+    target_l = st.number_input("Nghe - Listening (Mục tiêu)", 0.0, 9.0, 7.5, 0.5, help="Điểm nghe bạn mong muốn đạt được.")
+    target_r = st.number_input("Đọc - Reading (Mục tiêu)", 0.0, 9.0, 7.5, 0.5, help="Điểm đọc bạn mong muốn đạt được.")
+    target_w = st.number_input("Viết - Writing (Mục tiêu)", 0.0, 9.0, 7.0, 0.5, help="Điểm viết bạn mong muốn đạt được.")
+    target_s = st.number_input("Nói - Speaking (Mục tiêu)", 0.0, 9.0, 7.0, 0.5, help="Điểm nói bạn mong muốn đạt được.")
     exam_date = st.date_input("Ngày thi dự kiến", date.today() + timedelta(days=90), help="Ngày bạn dự định đi thi thật.")
     
-    st.subheader("3. Quỹ thời gian (Availability)")
-    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    st.subheader("3. Quỹ thời gian (Your Time)")
+    days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"]
+    english_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     availability = {}
-    for day in days:
+    for i, day in enumerate(days):
         with st.expander(f"{day}"):
             # Simple start/end hours
-            start_hour = st.slider(f"Start Hour ({day})", 0, 24, 18)
-            end_hour = st.slider(f"End Hour ({day})", 0, 24, 20)
+            start_hour = st.slider(f"Giờ bắt đầu ({day})", 0, 24, 18)
+            end_hour = st.slider(f"Giờ kết thúc ({day})", 0, 24, 20)
             if start_hour < end_hour:
-                availability[day] = [start_hour, end_hour]
+                availability[english_days[i]] = float(end_hour - start_hour)
             else:
-                availability[day] = []
+                availability[english_days[i]] = 0.0
+                
+    st.subheader("4. Cá nhân hóa (Personalize)")
+    focus_level = st.select_slider("Mức độ tập trung (Focus Level)", options=[1, 2, 3, 4, 5], value=3, help="1: Thư giãn - 5: Cực kỳ tập trung")
     
-    st.subheader("4. Chỉ số cá nhân")
-    focus_level = st.select_slider("Cấp độ tập trung (1-5)", options=[1, 2, 3, 4, 5], value=3)
-    learning_style = st.selectbox("Phương pháp học yêu thích", ["Visual", "Auditory", "Kinesthetic", "Read/Write"])
-
-    if st.button("🚀 Tạo Lộ Trình Thông Minh"):
+    if st.button("🚀 Tạo Lộ Trình Thông Minh", use_container_width=True):
         profile = UserProfile(
             current_scores={'Listening': l_score, 'Reading': r_score, 'Writing': w_score, 'Speaking': s_score},
             target_scores={'Listening': target_l, 'Reading': target_r, 'Writing': target_w, 'Speaking': target_s},
             exam_date=exam_date,
             availability=availability,
-            focus_level=focus_level,
-            learning_style=learning_style
+            focus_level=focus_level
         )
         st.session_state.profile = profile
         scheduler = IELTSScheduler(profile)
-        st.session_state.timetable = scheduler.generate_timetable(st.session_state.completed_tasks)
-        st.success("Lộ trình đã được tối ưu hóa!")
+        st.session_state.timetable = scheduler.generate_timetable()
+        st.success("Lộ trình đã được tạo thành công!")
+        st.rerun()
 
     if st.session_state.profile and st.button("🔄 Cập nhật Lộ trình (Recalculate)"):
         scheduler = IELTSScheduler(st.session_state.profile)
@@ -165,25 +165,50 @@ if not st.session_state.profile:
             st.markdown("**🛡️ Tránh quá tải**")
             st.write("Cơ chế Buffer Days giúp bạn có thời gian ôn tập và nghỉ ngơi.")
 else:
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📅 Lịch Học", "📈 Biểu đồ", "📝 Nhật ký", "📚 Kho Tài Liệu", "ℹ️ Hướng dẫn", "📊 Research"])
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📅 Lịch Học", "📈 Biểu đồ", "📝 Nhật ký", "📚 Kho Tài Liệu", "ℹ️ Hướng dẫn", "📊 Phân tích"])
     
     with tab1:
-        st.header("📅 Lộ trình học tập 7 ngày tới")
-        today = date.today()
-        upcoming = [d for d in st.session_state.timetable if d.date >= today][:7]
+        st.header("📅 Lộ trình học tập chi tiết")
         
-        for day in upcoming:
-            with st.expander(f"📅 {day.date.strftime('%A, %d/%m/%Y')}" + (" (Buffer Day)" if day.is_buffer_day else ""), expanded=(day.date == today)):
+        # Week selection
+        total_days = len(st.session_state.timetable)
+        total_weeks = math.ceil(total_days / 7)
+        
+        # Group timetable by weeks
+        weeks = {}
+        for i in range(total_weeks):
+            weeks[i+1] = st.session_state.timetable[i*7 : (i+1)*7]
+            
+        selected_week = st.selectbox("Chọn tuần học", [f"Tuần {i+1}" for i in range(total_weeks)], index=0)
+        week_num = int(selected_week.split(" ")[1])
+        
+        today = date.today()
+        current_week_days = weeks[week_num]
+        
+        for day in current_week_days:
+            # Convert English day names to Vietnamese for display
+            day_name_vn = day.date.strftime('%A').replace('Monday', 'Thứ 2').replace('Tuesday', 'Thứ 3').replace('Wednesday', 'Thứ 4').replace('Thursday', 'Thứ 5').replace('Friday', 'Thứ 6').replace('Saturday', 'Thứ 7').replace('Sunday', 'Chủ nhật')
+            
+            # Status icon for the day
+            day_tasks_total = len(day.tasks)
+            day_tasks_done = sum(1 for t in day.tasks if t.is_completed)
+            status_icon = "✅" if day_tasks_total > 0 and day_tasks_done == day_tasks_total else "🕒"
+            if day_tasks_total == 0: status_icon = "☕"
+            
+            with st.expander(f"{status_icon} {day_name_vn}, {day.date.strftime('%d/%m/%Y')}" + (" (Ôn tập/Nghỉ)" if day.is_buffer_day else ""), expanded=(day.date == today)):
                 if not day.tasks:
                     st.info("Hôm nay là ngày nghỉ! Hãy nạp lại năng lượng.")
                 else:
                     for task in day.tasks:
+                        # Translate skill names for display
+                        skill_display = task.skill.replace('Listening', 'Nghe').replace('Reading', 'Đọc').replace('Writing', 'Viết').replace('Speaking', 'Nói').replace('Review', 'Ôn tập').replace('Mock Test', 'Thi thử')
+                        
                         # Determine badge class
                         badge_class = f"badge-{task.skill.lower().replace(' ', '-')}"
                         
                         st.markdown(f"""
                         <div class="task-card">
-                            <span class="skill-badge {badge_class}">{task.skill}</span>
+                            <span class="skill-badge {badge_class}">{skill_display}</span>
                             <strong>{task.description}</strong>
                             <div style="float: right; color: #666;">⏱ {task.duration_hours}h</div>
                         </div>
@@ -391,14 +416,14 @@ else:
             """)
 
     with tab6:
-        st.header("📊 Trung tâm Nghiên cứu (Research Hub)")
+        st.header("📊 Trung tâm Phân tích (Analytics Hub)")
         
         # New: Research Insights Section
-        st.subheader("💡 Phân tích Dữ liệu Nghiên cứu")
+        st.subheader("💡 Phân tích dữ liệu học tập")
         if st.session_state.completed_tasks:
             df_research = pd.DataFrame([
                 {
-                    'Kỹ năng': t.skill,
+                    'Kỹ năng': t.skill.replace('Listening', 'Nghe').replace('Reading', 'Đọc').replace('Writing', 'Viết').replace('Speaking', 'Nói').replace('Review', 'Ôn tập').replace('Mock Test', 'Thi thử'),
                     'Số giờ': t.duration_hours,
                     'Tác động (Band)': t.predicted_impact,
                     'Ngày': t.completed_at.date() if t.completed_at else None
@@ -424,13 +449,13 @@ else:
                                        plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color="#fafafa")
                 st.plotly_chart(fig_daily, use_container_width=True)
         else:
-            st.info("Chưa có dữ liệu hoàn thành để phân tích nghiên cứu.")
+            st.info("Chưa có dữ liệu hoàn thành để phân tích.")
 
         st.divider()
         
         col1, col2 = st.columns(2)
         with col1:
-            st.subheader("Trích xuất dữ liệu")
+            st.subheader("Trích xuất dữ liệu (Export)")
             if st.session_state.completed_tasks:
                 df_export = pd.DataFrame([
                     {
