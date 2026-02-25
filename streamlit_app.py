@@ -385,7 +385,42 @@ else:
             """)
 
     with tab6:
-        st.header("Xuất dữ liệu cho Nghiên cứu (Research Support)")
+        st.header("📊 Trung tâm Nghiên cứu (Research Hub)")
+        
+        # New: Research Insights Section
+        st.subheader("💡 Phân tích Dữ liệu Nghiên cứu")
+        if st.session_state.completed_tasks:
+            df_research = pd.DataFrame([
+                {
+                    'Kỹ năng': t.skill,
+                    'Số giờ': t.duration_hours,
+                    'Tác động (Band)': t.predicted_impact,
+                    'Ngày': t.completed_at.date() if t.completed_at else None
+                } for t in st.session_state.completed_tasks
+            ])
+            
+            res_col1, res_col2 = st.columns(2)
+            with res_col1:
+                st.markdown("**Hiệu suất theo Kỹ năng**")
+                skill_stats = df_research.groupby('Kỹ năng').agg({
+                    'Số giờ': 'sum',
+                    'Tác động (Band)': 'sum'
+                }).reset_index()
+                skill_stats['Hiệu suất (Band/Giờ)'] = (skill_stats['Tác động (Band)'] / skill_stats['Số giờ']).round(4)
+                st.dataframe(skill_stats, use_container_width=True, hide_index=True)
+            
+            with res_col2:
+                st.markdown("**Tần suất học tập theo ngày**")
+                daily_counts = df_research.groupby('Ngày').size().reset_index(name='Số nhiệm vụ')
+                fig_daily = px.bar(daily_counts, x='Ngày', y='Số nhiệm vụ', 
+                                  color_discrete_sequence=['#17a2b8'])
+                fig_daily.update_layout(height=200, margin=dict(l=0, r=0, t=0, b=0),
+                                       plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color="#fafafa")
+                st.plotly_chart(fig_daily, use_container_width=True)
+        else:
+            st.info("Chưa có dữ liệu hoàn thành để phân tích nghiên cứu.")
+
+        st.divider()
         
         col1, col2 = st.columns(2)
         with col1:
@@ -412,11 +447,21 @@ else:
                 st.warning("Cần hoàn thành nhiệm vụ để xuất dữ liệu.")
 
         with col2:
-            st.subheader("Cập nhật Mock Test")
-            st.write("Cập nhật điểm số thực tế từ bài Mock Test.")
-            new_l = st.number_input("Mock Listening", 0.0, 9.0, st.session_state.profile.current_scores['Listening'])
-            if st.button("Cập nhật điểm & Tính lại lộ trình"):
-                st.session_state.profile.current_scores['Listening'] = new_l
+            st.subheader("📝 Cập nhật Điểm Mock Test")
+            st.write("Dùng để hiệu chỉnh lộ trình khi bạn có điểm thi thử mới.")
+            mc1, mc2 = st.columns(2)
+            with mc1:
+                new_l = st.number_input("Mock Listening", 0.0, 9.0, st.session_state.profile.current_scores['Listening'], 0.5)
+                new_r = st.number_input("Mock Reading", 0.0, 9.0, st.session_state.profile.current_scores['Reading'], 0.5)
+            with mc2:
+                new_w = st.number_input("Mock Writing", 0.0, 9.0, st.session_state.profile.current_scores['Writing'], 0.5)
+                new_s = st.number_input("Mock Speaking", 0.0, 9.0, st.session_state.profile.current_scores['Speaking'], 0.5)
+            
+            if st.button("🚀 Cập nhật & Tối ưu lại lộ trình"):
+                st.session_state.profile.current_scores = {
+                    'Listening': new_l, 'Reading': new_r,
+                    'Writing': new_w, 'Speaking': new_s
+                }
                 scheduler = IELTSScheduler(st.session_state.profile)
                 st.session_state.timetable = scheduler.generate_timetable(st.session_state.completed_tasks)
-                st.success("Đã cập nhật điểm Mock Test và tối ưu hóa lại lộ trình!")
+                st.success("Hệ thống đã phân tích điểm mới và tái cấu trúc lộ trình học!")
